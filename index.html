@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Калькулятор кредитов</title>
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg: #f6f9ff;
+    --card: #ffffff;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --accent-2: #7c3aed;
+    --success: #10b981;
+    --danger: #ef4444;
+    --border: #e6eefb;
+    --glass: rgba(255,255,255,0.7);
+    --shadow: 0 10px 30px rgba(19,38,69,0.06);
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    color-scheme: light;
+  }
+  *{box-sizing:border-box}
+  html{overflow-x: hidden;}
+  html,body{height:100%}
+  body{
+    margin:0;
+    min-height:100%;
+    background:
+      radial-gradient(800px 400px at 10% 10%, rgba(124,58,237,0.08), transparent 10%),
+      linear-gradient(180deg,#f8fbff 0%, var(--bg) 100%);
+    color:#0b1220;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    line-height:1.4;
+    padding:28px;
+  }
+
+  @media screen and (max-width: 760px) {
+      body{
+      padding:4px;
+    }
+  }
+
+  .wrap{
+    max-width:1200px;
+    margin:0 auto;
+  }
+
+  header{
+    display:flex;
+    gap:16px;
+    align-items:center;
+    margin-bottom:18px;
+  }
+  .logo{
+    width:56px;height:56px;border-radius:12px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:flex;align-items:center;justify-content:center;color:white;font-weight:800;
+    box-shadow: 0 8px 30px rgba(37,99,235,0.18);
+    font-size:18px;
+  }
+  header h1{margin:0;font-size:20px}
+  header p{margin:0;color:var(--muted); font-size:13px}
+
+  .grid{
+    display:grid;
+    grid-template-columns: 1fr 360px;
+    gap:20px;
+  }
+
+  .card{
+    background:var(--card);
+    border-radius:14px;
+    padding:18px;
+    box-shadow:var(--shadow);
+    border:1px solid var(--border);
+  }
+
+  @media screen and (max-width: 760px) {
+    .card {margin-bottom: 22px; margin-top: 0 !important;}
+  }
+
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:600}
+  .field{margin-bottom:12px}
+  input[type="number"], input[type="text"], select, input[type="date"]{
+    width:100%;
+    padding:10px 12px;border-radius:10px;border:1px solid #e6eefb;
+    background:linear-gradient(180deg,#fff, #fbfdff);
+    font-size:14px;
+    transition:box-shadow .12s, border-color .12s;
+  }
+  input:focus, select:focus{outline:none;border-color:var(--accent);box-shadow:0 6px 18px rgba(37,99,235,0.08)}
+
+  .row{display:flex;gap:12px;align-items:center}
+  @media(max-width:760px){
+    .row{flex-direction: column;}
+    .field{width: 100% !important;}
+  }
+  .row > div{flex:1}
+
+  .actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+  button{border:0;padding:10px 14px;border-radius:10px;background:var(--accent);color:white;font-weight:700;cursor:pointer}
+  button.ghost{background:transparent;border:1px solid #e6eefb;color:var(--muted);font-weight:600}
+  button.warn{background:transparent;border:1px solid #fca5a5;color:var(--danger)}
+  button:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+  .muted{color:var(--muted);font-size:13px}
+  h2{margin:0 0 12px 0;font-size:18px}
+  h3{margin:0 0 8px 0;font-size:15px}
+
+  .summary{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
+  .tile{flex:1;min-width:160px;padding:12px;border-radius:10px;border:1px solid var(--border);background:linear-gradient(180deg,#fff,#fbfdff)}
+  .tile .value{font-weight:800;font-size:18px;margin-top:6px}
+  .small{font-size:13px;color:var(--muted)}
+
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+  th,td{padding:8px;border-bottom:1px solid var(--border);text-align:right}
+  th{text-align:left;color:var(--muted);font-weight:700;font-size:12px}
+  tr:hover td{background:#fbfdff}
+
+  .controls {display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .share-url{word-break:break-all;padding:8px;border-radius:8px;border:1px dashed #e6eefb;background:#fafcff;font-size:13px}
+
+  .saved-item{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px;border-radius:10px;border:1px solid var(--border);margin-bottom:8px}
+  .saved-item .meta{color:var(--muted);font-size:13px}
+
+  .payment-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;border:1px solid var(--border);margin-bottom:8px;background:#fbfdff}
+
+  @media(max-width:1000px){
+    .grid{grid-template-columns:1fr}
+  }
+
+  #startDate {max-width: 99% !important; margin-left: 0.4%;}
+
+  .error{color:var(--danger);font-weight:700;font-size:13px;margin-top:8px}
+  .hint{font-size:13px;color:var(--muted)}
+  .logoText{font-size:13px;color:var(--muted)}
+  .chart-wrap{height:260px;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- <header>
+    <div class="logo">LH</div>
+    <div>
+      <h1>Loan Helper — Калькулятор кредитов</h1>
+      <p class="logoText">Графики, экспорт CSV/ICS/JSON и локальное сохранение</p>
+      <p>Чтобы не удалялась информация не очищайте кеш</p>
+    </div>
+  </header> -->
+
+  <div class="grid">
+    <div class="card" id="mainCard">
+      <h2>Параметры кредита</h2>
+
+      <div class="field">
+        <label for="principal">Сумма кредита</label>
+        <input id="principal" type="number" min="0" step="0.01" value="100000" aria-label="Сумма кредита"/>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="annualRate">Годовой процент (%)</label>
+          <input id="annualRate" type="number" min="0" step="0.01" value="12" />
+        </div>
+        <div style="width:180px" class="field">
+          <label for="rateType">Тип платежа</label>
+          <select id="rateType">
+            <option value="annuity">Аннуитет (равные)</option>
+            <option value="differential">Дифференцированный</option>
+            <option value="simple">Простые проценты</option>
+            <option value="compound">Капитализация</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div style="width:160px" class="field">
+          <label for="termValue">Срок (число)</label>
+          <input id="termValue" type="number" min="1" value="12" />
+        </div>
+        <div style="width:160px" class="field">
+          <label for="termUnit">Единица срока</label>
+          <select id="termUnit">
+            <option value="years">Годы</option>
+            <option value="months" selected>Месяцы</option>
+            <option value="days">Дни</option>
+          </select>
+        </div>
+        <div style="flex:1" class="field">
+          <label for="payFreq">Частота платежей</label>
+          <select id="payFreq">
+            <option value="monthly" selected>Ежемесячно</option>
+            <option value="weekly">Еженедельно</option>
+            <option value="daily">Ежедневно</option>
+            <option value="yearly">Ежегодно</option>
+            <option value="once">Единовременно</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="startDate">Дата начала (первый платёж)</label>
+          <input id="startDate" type="date" />
+        </div>
+        <div style="width:140px" class="field">
+          <label for="currency">Валюта</label>
+          <input id="currency" type="text" value="₽" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="calcBtn">Посчитать</button>
+        <button id="saveBtn" class="ghost">Сохранить</button>
+        <button id="exportBtn" class="ghost">Экспорт JSON</button>
+        <button id="exportCSV" class="ghost">Экспорт CSV</button>
+      </div>
+
+      <div id="validation" class="error" style="display:none"></div>
+
+      <hr style="border:none;height:1px;background:var(--border);margin:14px 0" />
+
+      <div id="results" style="display:none">
+        <h3>Итоги</h3>
+        <div class="summary">
+          <div class="tile">
+            <div class="small">Средний платёж</div>
+            <div id="paymentBig" class="value">—</div>
+          </div>
+          <div class="tile">
+            <div class="small">Всего выплачено</div>
+            <div id="totalPaid" class="value">—</div>
+          </div>
+          <div class="tile">
+            <div class="small">Всего процентов</div>
+            <div id="totalInterest" class="value">—</div>
+          </div>
+        </div>
+
+        <div class="chart-wrap card" style="margin-top:12px;padding:12px;">
+          <canvas id="paymentsChart" aria-label="График платежей" role="img"></canvas>
+        </div>
+
+        <h3 style="margin-top:12px">Амортизационная таблица</h3>
+        <div style="max-height:320px;overflow:auto">
+          <table id="amTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Дата</th>
+                <th>Платёж</th>
+                <th>Тело</th>
+                <th>Проценты</th>
+                <th>Остаток</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+          <button id="exportICS" class="ghost">Экспорт .ics</button>
+          <button id="shareUrl" class="ghost">Создать ссылку</button>
+          <input id="generatedUrl" readonly class="share-url" style="flex:1" />
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h3>Сохранённые кредиты</h3>
+        <div id="savedList" style="margin-top:12px"></div>
+
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button id="importBtn" class="ghost">Импорт JSON</button>
+          <input id="fileInput" type="file" accept="application/json" style="display:none"/>
+          <button id="clearStorage" class="warn">Очистить всё</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h3>Ближайшие платежи</h3>
+        <div class="small">Экспортируйте .ics для добавления в календарь</div>
+        <div id="upcoming" style="margin-top:12px"></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h3>Счётчик (ручной)</h3>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button id="decBtn" class="ghost">-</button>
+          <div id="counter" style="min-width:48px;text-align:center;font-weight:800;font-size:16px">0</div>
+          <button id="incBtn" class="ghost">+</button>
+          <button id="resetCounter" class="ghost">Сброс</button>
+        </div>
+        <div class="small" style="margin-top:8px">Для подсчёта платежей, дней просрочки и т.д.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+const $ = id => document.getElementById(id);
+function nf(v, cur='₽') {
+  return new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(v)) + ' ' + cur;
+}
+function daysBetween(a,b){ return Math.round((b-a)/(1000*3600*24)); }
+function addPeriod(date, freq, count=1){
+  const d = new Date(date);
+  if(freq === 'monthly'){ d.setMonth(d.getMonth() + count); }
+  else if(freq === 'weekly'){ d.setDate(d.getDate() + 7*count); }
+  else if(freq === 'daily'){ d.setDate(d.getDate() + count); }
+  else if(freq === 'yearly'){ d.setFullYear(d.getFullYear() + count); }
+  else { d.setDate(d.getDate() + 365*count); }
+  return d;
+}
+
+const STORAGE_KEY = 'loanhelper.saved';
+function loadSaved(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }catch(e){ return []; } }
+function saveSaved(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); renderSaved(); }
+
+window.addEventListener('load', () => {
+  $('startDate').value = new Date().toISOString().slice(0,10);
+  $('counter').innerText = localStorage.getItem('loanhelper.counter') || '0';
+  renderSaved();
+  try{ loadFromUrlHash(); }catch(e){ console.warn(e); }
+});
+
+$('calcBtn').addEventListener('click', () => {
+  $('validation').style.display = 'none';
+  const state = readForm();
+  const err = validate(state);
+  if(err){ $('validation').innerText = err; $('validation').style.display = 'block'; return; }
+  const res = calculateLoan(state);
+  showResults(res, state);
+});
+
+$('saveBtn').addEventListener('click', () => {
+  const s = readForm();
+  const name = prompt('Имя для сохранения (короткое описание):', 'Кредит ' + new Date().toLocaleString());
+  if(!name) return;
+  const arr = loadSaved();
+  arr.push({ name, created: new Date().toISOString(), state: s });
+  saveSaved(arr);
+  alert('Сохранено локально');
+});
+
+$('exportBtn').addEventListener('click', () => {
+  const s = readForm();
+  const blob = new Blob([JSON.stringify(s, null, 2)], {type:'application/json;charset=utf-8'});
+  downloadBlob(blob, 'loan.json');
+});
+
+$('exportCSV').addEventListener('click', () => {
+  const s = readForm();
+  const res = calculateLoan(s);
+  const csv = buildCSV(res.schedule);
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  downloadBlob(blob, 'loan_schedule.csv');
+});
+
+$('importBtn').addEventListener('click', () => $('fileInput').click());
+$('fileInput').addEventListener('change', ev => {
+  const f = ev.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      populateForm(data);
+      alert('Импортировано в форму');
+    } catch(err){
+      alert('Ошибка формата JSON: ' + err.message);
+    }
+  };
+  r.readAsText(f);
+});
+
+$('clearStorage').addEventListener('click', () => {
+  if(confirm('Удалить все сохранённые кредиты?')) { localStorage.removeItem(STORAGE_KEY); renderSaved(); }
+});
+
+$('incBtn').addEventListener('click', ()=> updateCounter(1));
+$('decBtn').addEventListener('click', ()=> updateCounter(-1));
+$('resetCounter').addEventListener('click', ()=> { localStorage.setItem('loanhelper.counter','0'); $('counter').innerText='0'; });
+function updateCounter(delta){
+  const cur = parseInt(localStorage.getItem('loanhelper.counter') || '0',10);
+  const next = Math.max(0, cur + delta);
+  localStorage.setItem('loanhelper.counter', String(next));
+  $('counter').innerText = String(next);
+}
+
+$('shareUrl').addEventListener('click', () => {
+  const s = readForm();
+  const enc = btoa(encodeURIComponent(JSON.stringify(s)));
+  $('generatedUrl').value = location.origin + location.pathname + '#s=' + enc;
+});
+function loadFromUrlHash(){
+  const h = location.hash.slice(1);
+  if(!h) return;
+  if(!h.startsWith('s=')) return;
+  const enc = h.slice(2);
+  try{
+    const json = decodeURIComponent(atob(enc));
+    const state = JSON.parse(json);
+    populateForm(state);
+    alert('Импортировано состояние из ссылки');
+  }catch(e){
+    console.warn('Failed parse url state', e);
+  }
+}
+
+$('exportICS').addEventListener('click', ()=>{
+  const s = readForm();
+  const res = calculateLoan(s);
+  const ics = buildICS(res.schedule, s);
+  const blob = new Blob([ics], {type:'text/calendar;charset=utf-8'});
+  downloadBlob(blob, 'loan_payments.ics');
+});
+
+function downloadBlob(blob, name){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function renderSaved(){
+  const list = loadSaved();
+  const el = $('savedList'); el.innerHTML = '';
+  if(!list.length){ el.innerHTML = '<div class="small muted">Нет сохранённых записей</div>'; return; }
+  list.slice().reverse().forEach(item => {
+    const div = document.createElement('div'); div.className='saved-item';
+    div.innerHTML = `
+      <div>
+        <div style="font-weight:700">${escapeHTML(item.name)}</div>
+        <div class="meta">${new Date(item.created).toLocaleString()}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="ghost" data-act="load">Загрузить</button>
+        <button class="ghost" data-act="share">Поделиться</button>
+        <button class="ghost" data-act="del">Удалить</button>
+      </div>
+    `;
+    div.querySelector('[data-act="load"]').onclick = () => { populateForm(item.state); alert('Запись загружена'); };
+    div.querySelector('[data-act="share"]').onclick = () => {
+      const enc = btoa(encodeURIComponent(JSON.stringify(item.state)));
+      prompt('Ссылка для обмена', location.origin + location.pathname + '#s=' + enc);
+    };
+    div.querySelector('[data-act="del"]').onclick = () => {
+      if(!confirm('Удалить запись?')) return;
+      const arr = loadSaved();
+      const idx = arr.findIndex(i => i.created === item.created && i.name === item.name);
+      if(idx !== -1){ arr.splice(idx,1); saveSaved(arr); }
+    };
+    el.appendChild(div);
+  });
+}
+
+function readForm(){
+  return {
+    principal: Number($('principal').value) || 0,
+    annualRate: Number($('annualRate').value) || 0,
+    rateType: $('rateType').value,
+    termValue: Number($('termValue').value) || 0,
+    termUnit: $('termUnit').value,
+    payFreq: $('payFreq').value,
+    startDate: $('startDate').value || new Date().toISOString().slice(0,10),
+    currency: $('currency').value || '₽'
+  };
+}
+function populateForm(s){
+  $('principal').value = s.principal ?? 100000;
+  $('annualRate').value = s.annualRate ?? 12;
+  $('rateType').value = s.rateType ?? 'annuity';
+  $('termValue').value = s.termValue ?? 12;
+  $('termUnit').value = s.termUnit ?? 'months';
+  $('payFreq').value = s.payFreq ?? 'monthly';
+  $('startDate').value = s.startDate ?? new Date().toISOString().slice(0,10);
+  $('currency').value = s.currency ?? '₽';
+}
+function validate(s){
+  if(s.principal <= 0) return 'Сумма кредита должна быть больше 0';
+  if(s.termValue <= 0) return 'Срок должен быть больше 0';
+  if(s.annualRate < 0) return 'Процент не может быть отрицательным';
+  return null;
+}
+
+function calculateLoan(s){
+  const { principal, annualRate, rateType, termValue, termUnit, payFreq, startDate, currency } = s;
+  const r = annualRate / 100;
+
+  const freqMap = { monthly: 12, weekly: 52, daily: 365, yearly: 1, once: 1 };
+  const periodPerYear = freqMap[payFreq] ?? 12;
+  const periodicRate = r / periodPerYear;
+
+  let totalPeriods = 1;
+  if(termUnit === 'years'){
+    totalPeriods = Math.round(termValue * periodPerYear);
+  } else if(termUnit === 'months'){
+    totalPeriods = Math.round((termValue / 12) * periodPerYear);
+  } else if(termUnit === 'days'){
+    totalPeriods = Math.round((termValue / 365) * periodPerYear);
+  }
+  if(totalPeriods < 1) totalPeriods = 1;
+
+  const start = new Date(startDate);
+  let schedule = [];
+  let balance = principal;
+  let totalInterest = 0;
+
+  if(rateType === 'simple'){
+    const years = termUnit === 'years' ? termValue : (termUnit === 'months' ? termValue/12 : termValue/365);
+    const interestTotal = principal * r * years;
+    const totalPay = principal + interestTotal;
+    const perPayment = (payFreq === 'once' || totalPeriods === 1) ? totalPay : totalPay / totalPeriods;
+
+    balance = principal;
+    for(let i=1;i<=totalPeriods;i++){
+      const date = addPeriod(start, payFreq, i-1);
+      const interestPaid = interestTotal / totalPeriods;
+      const principalPaid = perPayment - interestPaid;
+      balance = Math.max(0, balance - principalPaid);
+      schedule.push({ num:i, date: date.toISOString().slice(0,10), payment: perPayment, principalPaid, interestPaid, balance });
+      totalInterest += interestPaid;
+    }
+    return { schedule, totalInterest, totalPaid: principal + totalInterest, currency };
+  }
+
+  if(rateType === 'compound'){
+    const compounded = principal * Math.pow(1 + periodicRate, totalPeriods);
+    if(payFreq === 'once' || totalPeriods === 1){
+      const date = addPeriod(start, payFreq, totalPeriods-1);
+      const interestPaid = compounded - principal;
+      schedule.push({ num:1, date: date.toISOString().slice(0,10), payment: compounded, principalPaid: principal, interestPaid, balance: 0 });
+      return { schedule, totalInterest: interestPaid, totalPaid: compounded, currency };
+    } else {
+      let annuityPay = 0;
+      if(periodicRate === 0) annuityPay = compounded / totalPeriods;
+      else annuityPay = compounded * periodicRate / (1 - Math.pow(1 + periodicRate, -totalPeriods));
+      balance = compounded;
+      for(let i=1;i<=totalPeriods;i++){
+        const date = addPeriod(start, payFreq, i-1);
+        const interestPaid = balance * periodicRate;
+        const principalPaid = annuityPay - interestPaid;
+        balance = Math.max(0, balance - principalPaid);
+        schedule.push({ num:i, date: date.toISOString().slice(0,10), payment: annuityPay, principalPaid, interestPaid, balance });
+        totalInterest += interestPaid;
+      }
+      return { schedule, totalInterest, totalPaid: annuityPay * totalPeriods, currency };
+    }
+  }
+
+  if(rateType === 'annuity'){
+    let annuityPay = 0;
+    if(periodicRate === 0) annuityPay = principal / totalPeriods;
+    else annuityPay = principal * periodicRate / (1 - Math.pow(1 + periodicRate, -totalPeriods));
+    balance = principal;
+    for(let i=1;i<=totalPeriods;i++){
+      const date = addPeriod(start, payFreq, i-1);
+      const interestPaid = balance * periodicRate;
+      const principalPaid = annuityPay - interestPaid;
+      balance = Math.max(0, balance - principalPaid);
+      schedule.push({ num:i, date: date.toISOString().slice(0,10), payment: annuityPay, principalPaid, interestPaid, balance });
+      totalInterest += interestPaid;
+    }
+    return { schedule, totalInterest, totalPaid: annuityPay * totalPeriods, currency };
+  }
+
+  // Differential
+  if(rateType === 'differential'){
+    const principalPart = principal / totalPeriods;
+    balance = principal;
+    for(let i=1;i<=totalPeriods;i++){
+      const date = addPeriod(start, payFreq, i-1);
+      const interestPaid = balance * periodicRate;
+      const payment = principalPart + interestPaid;
+      balance = Math.max(0, balance - principalPart);
+      schedule.push({ num:i, date: date.toISOString().slice(0,10), payment, principalPaid: principalPart, interestPaid, balance });
+      totalInterest += interestPaid;
+    }
+    return { schedule, totalInterest, totalPaid: principal + totalInterest, currency };
+  }
+
+  return { schedule:[], totalInterest:0, totalPaid:0, currency };
+}
+
+let paymentsChart = null;
+function showResults(res, s){
+  $('results').style.display = 'block';
+  const cur = s.currency || '₽';
+  const avgPay = res.schedule.length ? (res.totalPaid / res.schedule.length) : 0;
+  $('paymentBig').innerText = nf(avgPay, cur);
+  $('totalPaid').innerText = nf(res.totalPaid, cur);
+  $('totalInterest').innerText = nf(res.totalInterest, cur);
+
+  const tbody = $('amTable').querySelector('tbody'); tbody.innerHTML = '';
+  const labels = [], dataBalance = [], dataInterest = [], dataPrincipal = [], dataPayment = [];
+
+  res.schedule.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:left">${row.num}</td>
+      <td style="text-align:left">${row.date}</td>
+      <td>${nf(row.payment, cur)}</td>
+      <td>${nf(row.principalPaid, cur)}</td>
+      <td>${nf(row.interestPaid, cur)}</td>
+      <td>${nf(row.balance, cur)}</td>
+    `;
+    tbody.appendChild(tr);
+
+    labels.push(row.date);
+    dataBalance.push(Number(row.balance.toFixed(2)));
+    dataInterest.push(Number(row.interestPaid.toFixed(2)));
+    dataPrincipal.push(Number(row.principalPaid.toFixed(2)));
+    dataPayment.push(Number(row.payment.toFixed(2)));
+  });
+
+  renderUpcoming(res.schedule, cur);
+  renderChart(labels, dataBalance, dataInterest, dataPrincipal, dataPayment, s);
+}
+
+function renderChart(labels, balance, interest, principal, payment, s){
+  const ctx = $('paymentsChart').getContext('2d');
+  if(paymentsChart){ paymentsChart.destroy(); paymentsChart = null; }
+  paymentsChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Остаток', data: balance, borderWidth: 2, tension: 0.3, pointRadius: 0 },
+        { label: 'Проценты', data: interest, borderDash: [6,4], borderWidth: 1.5, tension: 0.3, pointRadius: 0 },
+        { label: 'Тело', data: principal, borderDash: [2,2], borderWidth: 1.5, tension: 0.3, pointRadius: 0 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect:false },
+      plugins: {
+        legend: { position:'top' },
+        tooltip: { callbacks: { label: ctx => {
+          return ctx.dataset.label + ': ' + nf(ctx.parsed.y, s.currency);
+        } } }
+      },
+      scales: {
+        y: { ticks: { callback: v => new Intl.NumberFormat('ru-RU').format(v) } },
+        x: { ticks: { maxRotation: 0 } }
+      }
+    }
+  });
+}
+
+function renderUpcoming(schedule, currency){
+  const el = $('upcoming'); el.innerHTML = '';
+  const today = new Date();
+  const upcoming = schedule.filter(s => new Date(s.date) >= today).slice(0,6);
+  if(!upcoming.length){ el.innerHTML = '<div class="small muted">Нет предстоящих платежей</div>'; return; }
+  upcoming.forEach(p => {
+    const div = document.createElement('div'); div.className='payment-item';
+    div.innerHTML = `
+      <div>
+        <div style="font-weight:700">${p.date}</div>
+        <div class="small muted">Платёж №${p.num}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:700">${nf(p.payment, currency)}</div>
+        <div class="small muted">Остаток: ${nf(p.balance, currency)}</div>
+      </div>
+    `;
+    el.appendChild(div);
+  });
+}
+
+function buildICS(schedule, s){
+  function dtToICS(d){
+    const D = new Date(d);
+    const Y = D.getUTCFullYear();
+    const M = String(D.getUTCMonth()+1).padStart(2,'0');
+    const Da = String(D.getUTCDate()).padStart(2,'0');
+    return `${Y}${M}${Da}T090000Z`;
+  }
+  let ics = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//LoanHelper//EN\r\nCALSCALE:GREGORIAN\r\n";
+  schedule.forEach((p,i) => {
+    ics += "BEGIN:VEVENT\r\n";
+    ics += "UID:" + (Date.now() + i) + "@loanhelper\r\n";
+    ics += "DTSTAMP:" + dtToICS(new Date()) + "\r\n";
+    ics += "DTSTART:" + dtToICS(p.date) + "\r\n";
+    ics += "SUMMARY:Платёж по кредиту — " + (s.currency||'₽') + Math.round(p.payment*100)/100 + "\r\n";
+    ics += "DESCRIPTION:Платёж: " + (s.currency||'₽') + Math.round(p.payment*100)/100 + "\\nТело: " + Math.round(p.principalPaid*100)/100 + "\\nПроценты: " + Math.round(p.interestPaid*100)/100 + "\r\n";
+    ics += "END:VEVENT\r\n";
+  });
+  ics += "END:VCALENDAR";
+  return ics;
+}
+
+function buildCSV(schedule){
+  let csv = '№;Дата;Платёж;Тело;Проценты;Остаток\r\n';
+  schedule.forEach(r => {
+    csv += `${r.num};${r.date};${r.payment.toFixed(2)};${r.principalPaid.toFixed(2)};${r.interestPaid.toFixed(2)};${r.balance.toFixed(2)}\r\n`;
+  });
+  return csv;
+}
+
+/* ------------------- helpers ------------------- */
+function escapeHTML(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+</script>
+</body>
+</html>
